@@ -1,0 +1,137 @@
+C51 COMPILER V9.01   1602                                                                  11/05/2019 11:34:58 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE 1602
+OBJECT MODULE PLACED IN 1602.OBJ
+COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE 1602.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include<reg51.h>
+   2          #include"1602.h"
+   3          #include"key_matrix.h"
+   4           
+   5          
+   6          #include<intrins.h>
+   7          #define   nop() _nop_()
+   8          #define uchar unsigned char
+   9          #define uint unsigned int
+  10           
+  11          void delay(int t)
+  12          {
+  13   1              uchar i;
+  14   1              while (t--)
+  15   1              {
+  16   2                      for (i=0;i<125;i++)
+  17   2                              {}
+  18   2              }
+  19   1      }
+  20           /*把数据的高地位倒换一下*/
+  21          uchar daoxu(uchar dat)
+  22          {
+  23   1              uchar temp;
+  24   1         temp=dat;
+  25   1              return temp;
+  26   1      }
+  27          void checkbusy()
+  28          {
+  29   1      /*      uchar i=0x80;
+  30   1              while(i&0x80)
+  31   1              {
+  32   1                      lcdrs=0;
+  33   1                      lcdrw=1;
+  34   1                      lcden=1;
+  35   1                      i=daoxu(lcdb);
+  36   1                      lcden=0;
+  37   1              } */
+  38   1              delay(25);
+  39   1      }
+  40          
+  41           
+  42          void writecmd(uchar cmd)
+  43          {
+  44   1              checkbusy();
+  45   1              lcdrs=0;
+  46   1              lcdrw=0;
+  47   1              lcden=1;
+  48   1              lcdb=daoxu(cmd);
+  49   1              lcden=0;
+  50   1              delay(10);      
+  51   1      }
+  52          
+  53          void wirtecursor(uchar x, uchar y)
+  54          {
+  55   1               uchar addr;
+C51 COMPILER V9.01   1602                                                                  11/05/2019 11:34:58 PAGE 2   
+
+  56   1              if(y==0)
+  57   1              {
+  58   2                      addr = 0x00 + x;
+  59   2              }
+  60   1              else
+  61   1              {
+  62   2                      addr = 0x40 + x;
+  63   2              }
+  64   1              writecmd(addr | 0x80);                //LCD数据指针必须是0x80开头
+  65   1      }
+  66          
+  67          
+  68          void writedata (uchar dat)
+  69          {
+  70   1              //checkbusy();
+  71   1              delay(5);
+  72   1              lcdrs=1;
+  73   1              lcdrw=0;
+  74   1              delay(5);
+  75   1              lcdb =dat;
+  76   1              lcden=1;
+  77   1              delay(5);
+  78   1              lcden=0;
+  79   1              //delay(5);
+  80   1      }
+  81          void writeshow(uchar x,uchar y,uchar *str)
+  82          {
+  83   1              wirtecursor(x,y);                                        //LCD当前坐标函数
+  84   1              while(*str != '\0')                                        //字符串没有结束时执行
+  85   1              {
+  86   2                      writedata(*str++);                        //传递完STR数据在对地址加加
+  87   2                      
+  88   2              }
+  89   1      }
+  90          void lcdinit()
+  91          {
+  92   1       
+  93   1       
+  94   1              //delay(2);
+  95   1              writecmd(0x38);
+  96   1              //delay(2);
+  97   1              writecmd(0x38);
+  98   1              //delay(2);
+  99   1              writecmd(0x38);
+ 100   1              checkbusy();
+ 101   1              writecmd(0x08);
+ 102   1              checkbusy();
+ 103   1              writecmd(0x01);
+ 104   1              checkbusy();
+ 105   1              writecmd(0x06);
+ 106   1              checkbusy();
+ 107   1              writecmd(0x0c);
+ 108   1              checkbusy();
+ 109   1       
+ 110   1      }  
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    188    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+C51 COMPILER V9.01   1602                                                                  11/05/2019 11:34:58 PAGE 3   
+
+   DATA SIZE        =   ----       3
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
