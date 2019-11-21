@@ -34,7 +34,9 @@ unsigned char temp;
 float refractivity;
 float set_real_num;
 float measure_num;
+float measure_num_tmp;
 float adjust_num;
+float tmp_re;
 int set_real_num_int;
 int measure_num_int;
 int adjust_num_int;
@@ -211,6 +213,7 @@ void main()
 	refractivity = 1.359;		  // ³õÊ¼»¯ÕÛÉäÂÊ
 	key_count = 0;
 	set_real_num_int = 0;
+	set_real_num = 0;
    
 	while (1)
 	{
@@ -240,7 +243,7 @@ void main()
 			}
 			set_real_num = (temp_list[0]-'0')*1 + (temp_list[2]-'0')*0.1 + + (temp_list[3]-'0') * 0.01;
 
-			set_real_num_int = (int)(set_real_num*100);
+			//set_real_num_int = (int)(set_real_num*100);
 
 		}
 
@@ -305,12 +308,15 @@ void main()
 				uartSbuf[i] = GetASCII(receivedata[i]);
 		    }
 			
-			measure_num = (uartSbuf[4]-'0') * 10 + (uartSbuf[5]-'0') * 1 + (uartSbuf[7]-'0') * 0.1 + (uartSbuf[8]-'0') * 0.01;		 //
-
-			if (set_real_num_int != 0) {
-				measure_num_int = (int)(measure_num * 100);
-				refractivity = set_real_num_int / measure_num_int;
+			measure_num = (uartSbuf[4]-'0') * 10 + (uartSbuf[5]-'0') * 1 + (uartSbuf[7]-'0') * 0.1 + (uartSbuf[8]-'0') * 0.01;		 //		0.779985
+			// 1.359
+			if (set_real_num != 0) {
+			    measure_num_tmp = measure_num *  refractivity;
+				//measure_num_int = (int)(measure_num * 100);
+				tmp_re = set_real_num / measure_num_tmp;					// 1.00 / 0.7799
+				refractivity = refractivity * tmp_re;
 			}
+			set_real_num = 0;
 
 			adjust_num = measure_num * refractivity;
 			adjust_num_int = (int)(adjust_num*100);

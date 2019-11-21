@@ -1,4 +1,4 @@
-C51 COMPILER V9.01   MAIN                                                                  11/05/2019 11:36:57 PAGE 1   
+C51 COMPILER V9.01   MAIN                                                                  11/16/2019 11:20:12 PAGE 1   
 
 
 C51 COMPILER V9.01, COMPILATION OF MODULE MAIN
@@ -43,358 +43,364 @@ line level    source
   34          float refractivity;
   35          float set_real_num;
   36          float measure_num;
-  37          float adjust_num;
-  38          int set_real_num_int;
-  39          int measure_num_int;
-  40          int adjust_num_int;
-  41          
-  42          int key_count;
+  37          float measure_num_tmp;
+  38          float adjust_num;
+  39          float tmp_re;
+  40          int set_real_num_int;
+  41          int measure_num_int;
+  42          int adjust_num_int;
   43          
-  44          char aciiCount; //收到的字符数计算
+  44          int key_count;
   45          
-  46          short receivedata[11]={0};
-  47          uchar uartSbuf[11];
-  48          uchar tmpSbuf[4];
-  49          
-  50          //short laserOn[5] = {0x80,0x06,0x05,0x01,0x74};
-  51          short singleTest[4] ={0x80,0x06,0x02,0x78};     
-  52          //short shutdown[4] = {0x80,0x04,0x02,0x7A};
-  53          //short multipleTest[4] ={0x80,0x06,0x03,0x77}; 
-  54          
-  55          bit recOver=0, recStart=0,tick=0;
-C51 COMPILER V9.01   MAIN                                                                  11/05/2019 11:36:57 PAGE 2   
+  46          char aciiCount; //收到的字符数计算
+  47          
+  48          short receivedata[11]={0};
+  49          uchar uartSbuf[11];
+  50          uchar tmpSbuf[4];
+  51          
+  52          //short laserOn[5] = {0x80,0x06,0x05,0x01,0x74};
+  53          short singleTest[4] ={0x80,0x06,0x02,0x78};     
+  54          //short shutdown[4] = {0x80,0x04,0x02,0x7A};
+  55          //short multipleTest[4] ={0x80,0x06,0x03,0x77}; 
+C51 COMPILER V9.01   MAIN                                                                  11/16/2019 11:20:12 PAGE 2   
 
-  56          uchar contrast=0xb0;
-  57          uchar eepAddr=0x00;
-  58          
-  59          /*
-  60          void Timer0Init(void)           //50毫秒@6.000MHz
-  61          {
-  62                  AUXR &= 0x7F;           //定时器时钟12T模式
-  63                  TMOD &= 0xF0;           //设置定时器模式
-  64                  TMOD |= 0x01;           //设置定时器模式
-  65                  TL0 = 0x58;             //设置定时初值
-  66                  TH0 = 0x9E;             //设置定时初值
-  67                  TF0 = 0;                //清除TF0标志
-  68                  TR0 = 1;                //定时器0开始计时
-  69                  ET0=1;
-  70                  EA=1;
-  71          }*/
-  72          /*
-  73          void UartInit(void)             //115200bps@11.0592MHz
-  74          {
-  75                  PCON &= 0x80;           //波特率不倍速
-  76                  SCON = 0x50;            //8位数据,可变波特率
-  77                  AUXR |= 0x40;           //定时器1时钟为Fosc,即1T
-  78                  AUXR &= 0xFE;           //串口1选择定时器1为波特率发生器
-  79                  TMOD &= 0x0F;           //清除定时器1模式位
-  80                  TMOD |= 0x20;           //设定定时器1为8位自动重装方式
-  81                  TL1 = 0xFD;             //设定定时初值
-  82                  TH1 = 0xFD;             //设定定时器重装值
-  83                  ET1 = 0;                //禁止定时器1中断
-  84                  TR1 = 1;                //启动定时器1
-  85                  ES=1;
-  86                  EA=1;
-  87          }       */
-  88          /*
-  89          void UartInit(void)             //9600bps@11.0592MHz
-  90          {
-  91                  PCON = 0x80;            //波特率不倍速
-  92                  SCON = 0x50;            //8位数据,可变波特率
-  93                  TMOD = 0x20;            //设定定时器1为8位自动重装方式
-  94                  TH1 = TC_VAL;           //设定定时器重装值
-  95                  TL1 = TH1;              //设定定时初值
-  96                  //ET1 = 0;              //禁止定时器1中断
-  97                  TR1 = 1;                //启动定时器1
-  98                  ES=1;
-  99                  EA=1;
- 100          } */
- 101          void UartInit(void)             //9600bps@11.0592MHz
- 102          {
- 103   1              SCON = 0x50; //2015-05-04       
- 104   1              TMOD = 0x20;    
- 105   1              TH1 = 0XFD; // 9600BPS 2015-05-04       
- 106   1              TL1 = 0XFD;     
- 107   1              TR1 = 1; // start TImer0        
- 108   1              ES = 1; // Enable serial interrupt      
- 109   1              EA = 1; // Enable global interrupt
- 110   1      }
- 111          
- 112          /*********** ***发送字符(ASCII)函数*** **********/
- 113          /*
- 114          void sendAscii(uchar *b)
- 115          {
- 116                  ES = 0;                  //关串口中断
- 117                  for (b; *b!='\0';b++)
-C51 COMPILER V9.01   MAIN                                                                  11/05/2019 11:36:57 PAGE 3   
+  56          
+  57          bit recOver=0, recStart=0,tick=0;
+  58          uchar contrast=0xb0;
+  59          uchar eepAddr=0x00;
+  60          
+  61          /*
+  62          void Timer0Init(void)           //50毫秒@6.000MHz
+  63          {
+  64                  AUXR &= 0x7F;           //定时器时钟12T模式
+  65                  TMOD &= 0xF0;           //设置定时器模式
+  66                  TMOD |= 0x01;           //设置定时器模式
+  67                  TL0 = 0x58;             //设置定时初值
+  68                  TH0 = 0x9E;             //设置定时初值
+  69                  TF0 = 0;                //清除TF0标志
+  70                  TR0 = 1;                //定时器0开始计时
+  71                  ET0=1;
+  72                  EA=1;
+  73          }*/
+  74          /*
+  75          void UartInit(void)             //115200bps@11.0592MHz
+  76          {
+  77                  PCON &= 0x80;           //波特率不倍速
+  78                  SCON = 0x50;            //8位数据,可变波特率
+  79                  AUXR |= 0x40;           //定时器1时钟为Fosc,即1T
+  80                  AUXR &= 0xFE;           //串口1选择定时器1为波特率发生器
+  81                  TMOD &= 0x0F;           //清除定时器1模式位
+  82                  TMOD |= 0x20;           //设定定时器1为8位自动重装方式
+  83                  TL1 = 0xFD;             //设定定时初值
+  84                  TH1 = 0xFD;             //设定定时器重装值
+  85                  ET1 = 0;                //禁止定时器1中断
+  86                  TR1 = 1;                //启动定时器1
+  87                  ES=1;
+  88                  EA=1;
+  89          }       */
+  90          /*
+  91          void UartInit(void)             //9600bps@11.0592MHz
+  92          {
+  93                  PCON = 0x80;            //波特率不倍速
+  94                  SCON = 0x50;            //8位数据,可变波特率
+  95                  TMOD = 0x20;            //设定定时器1为8位自动重装方式
+  96                  TH1 = TC_VAL;           //设定定时器重装值
+  97                  TL1 = TH1;              //设定定时初值
+  98                  //ET1 = 0;              //禁止定时器1中断
+  99                  TR1 = 1;                //启动定时器1
+ 100                  ES=1;
+ 101                  EA=1;
+ 102          } */
+ 103          void UartInit(void)             //9600bps@11.0592MHz
+ 104          {
+ 105   1              SCON = 0x50; //2015-05-04       
+ 106   1              TMOD = 0x20;    
+ 107   1              TH1 = 0XFD; // 9600BPS 2015-05-04       
+ 108   1              TL1 = 0XFD;     
+ 109   1              TR1 = 1; // start TImer0        
+ 110   1              ES = 1; // Enable serial interrupt      
+ 111   1              EA = 1; // Enable global interrupt
+ 112   1      }
+ 113          
+ 114          /*********** ***发送字符(ASCII)函数*** **********/
+ 115          /*
+ 116          void sendAscii(uchar *b)
+ 117          {
+C51 COMPILER V9.01   MAIN                                                                  11/16/2019 11:20:12 PAGE 3   
 
- 118                  {
- 119                          SBUF = *b;
- 120                          while (TI!=1);   //等待发送完成
- 121                          TI = 0;          //清除发送中断标志位
- 122                  }
- 123                  ES = 1;                  //开串口中断
- 124          } */
- 125          void sendcmdme(short *b)
- 126          {
- 127   1              ES = 0;                  //关串口中断
- 128   1              for (b; *b!='\0';b++)
- 129   1              {
- 130   2                      SBUF = *b;
- 131   2                      while (TI!=1);   //等待发送完成
- 132   2                      TI = 0;          //清除发送中断标志位
- 133   2              }
- 134   1              ES = 1;                  //开串口中断
- 135   1      }
- 136          /*
- 137          void clearUartSbuf()
- 138          {
- 139                  uchar i;
- 140                  for (i=0;i<aciiCount;i++)
- 141                  {
- 142                          uartSbuf[i]=0;
- 143                  }
- 144          }*/
- 145          /*
- 146          void setIoMode()
- 147          {
- 148                  P0M0=0xff;
- 149                  P0M1=0; //推挽输出
- 150                  
- 151          }*/
- 152          
- 153          uchar GetASCII(short ch)
- 154          {
- 155   1              /*if(x>0x0f)
- 156   1              {
- 157   1                      return 0;
- 158   1              }
- 159   1              if(x>9)
- 160   1              {
- 161   1                      return ('A'+x-10);
- 162   1              }
- 163   1              return ('0'+x);*/
- 164   1              if (ch == 0x2e) {
- 165   2                      return '.';
- 166   2              }
- 167   1              if (ch == 0x30) {
- 168   2                      return '0';
- 169   2              }
- 170   1              if (ch == 0x31) {
- 171   2                      return '1';
- 172   2              }
- 173   1              if (ch == 0x32) {
- 174   2                      return '2';
- 175   2              }
- 176   1              if (ch == 0x33) {
- 177   2                      return '3';
- 178   2              }
- 179   1              if (ch == 0x34) {
-C51 COMPILER V9.01   MAIN                                                                  11/05/2019 11:36:57 PAGE 4   
+ 118                  ES = 0;                  //关串口中断
+ 119                  for (b; *b!='\0';b++)
+ 120                  {
+ 121                          SBUF = *b;
+ 122                          while (TI!=1);   //等待发送完成
+ 123                          TI = 0;          //清除发送中断标志位
+ 124                  }
+ 125                  ES = 1;                  //开串口中断
+ 126          } */
+ 127          void sendcmdme(short *b)
+ 128          {
+ 129   1              ES = 0;                  //关串口中断
+ 130   1              for (b; *b!='\0';b++)
+ 131   1              {
+ 132   2                      SBUF = *b;
+ 133   2                      while (TI!=1);   //等待发送完成
+ 134   2                      TI = 0;          //清除发送中断标志位
+ 135   2              }
+ 136   1              ES = 1;                  //开串口中断
+ 137   1      }
+ 138          /*
+ 139          void clearUartSbuf()
+ 140          {
+ 141                  uchar i;
+ 142                  for (i=0;i<aciiCount;i++)
+ 143                  {
+ 144                          uartSbuf[i]=0;
+ 145                  }
+ 146          }*/
+ 147          /*
+ 148          void setIoMode()
+ 149          {
+ 150                  P0M0=0xff;
+ 151                  P0M1=0; //推挽输出
+ 152                  
+ 153          }*/
+ 154          
+ 155          uchar GetASCII(short ch)
+ 156          {
+ 157   1              /*if(x>0x0f)
+ 158   1              {
+ 159   1                      return 0;
+ 160   1              }
+ 161   1              if(x>9)
+ 162   1              {
+ 163   1                      return ('A'+x-10);
+ 164   1              }
+ 165   1              return ('0'+x);*/
+ 166   1              if (ch == 0x2e) {
+ 167   2                      return '.';
+ 168   2              }
+ 169   1              if (ch == 0x30) {
+ 170   2                      return '0';
+ 171   2              }
+ 172   1              if (ch == 0x31) {
+ 173   2                      return '1';
+ 174   2              }
+ 175   1              if (ch == 0x32) {
+ 176   2                      return '2';
+ 177   2              }
+ 178   1              if (ch == 0x33) {
+ 179   2                      return '3';
+C51 COMPILER V9.01   MAIN                                                                  11/16/2019 11:20:12 PAGE 4   
 
- 180   2                      return '4';
- 181   2              }
- 182   1              if (ch == 0x35) {
- 183   2                      return '5';
- 184   2              }
- 185   1              if (ch == 0x36) {
- 186   2                      return '6';
- 187   2              }
- 188   1              if (ch == 0x37) {
- 189   2                      return '7';
- 190   2              }
- 191   1              if (ch == 0x38) {
- 192   2                      return '8';
- 193   2              }
- 194   1              if (ch == 0x39) {
- 195   2                      return '9';
- 196   2              }
- 197   1              return '0';
- 198   1      }
- 199          
- 200          void main()
- 201          {
- 202   1      
- 203   1              UartInit();
- 204   1          lcdinit();
- 205   1              //sendMulCheck();
- 206   1              //writecmd(0x80);
- 207   1              //writedata('m');       
- 208   1              writeshow(0,0,"Fiber Length:");
- 209   1              //wirtecursor(0,1);
- 210   1              //writedata('m');
- 211   1              refractivity = 1.359;             // 初始化折射率
- 212   1              key_count = 0;
- 213   1              set_real_num_int = 0;
- 214   1         
- 215   1              while (1)
- 216   1              {
- 217   2                      //对于未知的折射率，需要初始化
- 218   2                 //检测外部键盘的输入
- 219   2      
- 220   2                 //首先按键，初始化折射率，请输入折射率，开始检测键盘的输入
- 221   2                 //键盘输入，数值保存
- 222   2                 //检测到确认键，结束
- 223   2                 if (set_nums==0) {
- 224   3                              lcdinit();
- 225   3                              writeshow(0,0,"PLE SET: 'D' ACK");
- 226   3                              temp_count = 0;
- 227   3                              temp = kbscan();
- 228   3                              while (temp!='D') {
- 229   4                                      temp = kbscan();                
- 230   4                                      if((temp!=0) && (temp!='D')) {
- 231   5                                              wirtecursor(temp_count,1);
- 232   5                                              writedata(temp);
- 233   5                                              temp_list[temp_count] = temp;
- 234   5                                              temp_count++;
- 235   5                                      }
- 236   4                                      if (temp=='D') {
- 237   5                                              lcdinit();
- 238   5                                              writeshow(0,1,"SET OK !");
- 239   5                                      } 
- 240   4                              }
- 241   3                              set_real_num = (temp_list[0]-'0')*1 + (temp_list[2]-'0')*0.1 + + (temp_list[3]-'0') * 0.01;
-C51 COMPILER V9.01   MAIN                                                                  11/05/2019 11:36:57 PAGE 5   
+ 180   2              }
+ 181   1              if (ch == 0x34) {
+ 182   2                      return '4';
+ 183   2              }
+ 184   1              if (ch == 0x35) {
+ 185   2                      return '5';
+ 186   2              }
+ 187   1              if (ch == 0x36) {
+ 188   2                      return '6';
+ 189   2              }
+ 190   1              if (ch == 0x37) {
+ 191   2                      return '7';
+ 192   2              }
+ 193   1              if (ch == 0x38) {
+ 194   2                      return '8';
+ 195   2              }
+ 196   1              if (ch == 0x39) {
+ 197   2                      return '9';
+ 198   2              }
+ 199   1              return '0';
+ 200   1      }
+ 201          
+ 202          void main()
+ 203          {
+ 204   1      
+ 205   1              UartInit();
+ 206   1          lcdinit();
+ 207   1              //sendMulCheck();
+ 208   1              //writecmd(0x80);
+ 209   1              //writedata('m');       
+ 210   1              writeshow(0,0,"Fiber Length:");
+ 211   1              //wirtecursor(0,1);
+ 212   1              //writedata('m');
+ 213   1              refractivity = 1.359;             // 初始化折射率
+ 214   1              key_count = 0;
+ 215   1              set_real_num_int = 0;
+ 216   1              set_real_num = 0;
+ 217   1         
+ 218   1              while (1)
+ 219   1              {
+ 220   2                      //对于未知的折射率，需要初始化
+ 221   2                 //检测外部键盘的输入
+ 222   2      
+ 223   2                 //首先按键，初始化折射率，请输入折射率，开始检测键盘的输入
+ 224   2                 //键盘输入，数值保存
+ 225   2                 //检测到确认键，结束
+ 226   2                 if (set_nums==0) {
+ 227   3                              lcdinit();
+ 228   3                              writeshow(0,0,"PLE SET: 'D' ACK");
+ 229   3                              temp_count = 0;
+ 230   3                              temp = kbscan();
+ 231   3                              while (temp!='D') {
+ 232   4                                      temp = kbscan();                
+ 233   4                                      if((temp!=0) && (temp!='D')) {
+ 234   5                                              wirtecursor(temp_count,1);
+ 235   5                                              writedata(temp);
+ 236   5                                              temp_list[temp_count] = temp;
+ 237   5                                              temp_count++;
+ 238   5                                      }
+ 239   4                                      if (temp=='D') {
+ 240   5                                              lcdinit();
+ 241   5                                              writeshow(0,1,"SET OK !");
+C51 COMPILER V9.01   MAIN                                                                  11/16/2019 11:20:12 PAGE 5   
 
- 242   3      
- 243   3                              set_real_num_int = (int)(set_real_num*100);
- 244   3      
- 245   3                      }
- 246   2      
- 247   2      
- 248   2                      // 以下是通过按键循环设置折射率
- 249   2                      if (k4==0) {
- 250   3                              lcdinit();
- 251   3                              writeshow(0,0,"SELECT RF");
- 252   3                              if (key_count == 4) {
- 253   4                                      key_count = 0;
- 254   4                              }
- 255   3                              if (key_count == 0) {
- 256   4                                      //writeshow(0,0,"WL: 850nm");
- 257   4                                      writeshow(0,1,"RF: 1.477");
- 258   4                                      refractivity = 1.354;
- 259   4                              }
- 260   3                              if (key_count == 1) {
- 261   4                                      //writeshow(0,0,"WL: 1300nm");
- 262   4                                      writeshow(0,1,"RF: 1.4719");
- 263   4                                      refractivity = 1.359;
- 264   4                              }
- 265   3                              if (key_count == 2) {
- 266   4                                      //writeshow(0,0,"WL: 1310nm");
- 267   4                                      writeshow(0,1,"RF: 1.4680");
- 268   4                                      refractivity = 1.362;
- 269   4                              }
- 270   3                              if (key_count == 3) {
- 271   4                                      //writeshow(0,0,"WL: 1550nm");
- 272   4                                      writeshow(0,1,"RF: 1.4685");
- 273   4                                      refractivity = 1.360;
- 274   4                              }
- 275   3                              key_count++;
- 276   3                      }
- 277   2      
- 278   2      
- 279   2                      if (k3==0){
- 280   3                              lcdinit();
- 281   3                              writeshow(0,0,"Reset: Wait.");
- 282   3                              writeshow(0,1,"-------");
- 283   3                              //sendcmdme(shutdown);
- 284   3                              delay(300);
- 285   3                              //sendcmdme(laserOn);
- 286   3                              lcdinit();
- 287   3                              writeshow(0,0,"Reset OK.");
- 288   3                              delay(300);
- 289   3                              writeshow(0,0,"Fiber Length:");
- 290   3                      }
- 291   2      
- 292   2      
- 293   2                      if (k2==0){
- 294   3                              lcdinit();
- 295   3                              writeshow(0,0,"Fiber Length:");
- 296   3                              stringLenth=38;
- 297   3                              aciiCount=0;//接收38个字符串就够了
- 298   3                              wirtecursor(0,1);
- 299   3                              writedata('M');
- 300   3                              //sendAscii("$00022426&");//开始连续测量
- 301   3                              sendcmdme(singleTest);
- 302   3      
- 303   3                              for(i = 0; i<11;i++)
-C51 COMPILER V9.01   MAIN                                                                  11/05/2019 11:36:57 PAGE 6   
+ 242   5                                      } 
+ 243   4                              }
+ 244   3                              set_real_num = (temp_list[0]-'0')*1 + (temp_list[2]-'0')*0.1 + + (temp_list[3]-'0') * 0.01;
+ 245   3      
+ 246   3                              //set_real_num_int = (int)(set_real_num*100);
+ 247   3      
+ 248   3                      }
+ 249   2      
+ 250   2      
+ 251   2                      // 以下是通过按键循环设置折射率
+ 252   2                      if (k4==0) {
+ 253   3                              lcdinit();
+ 254   3                              writeshow(0,0,"SELECT RF");
+ 255   3                              if (key_count == 4) {
+ 256   4                                      key_count = 0;
+ 257   4                              }
+ 258   3                              if (key_count == 0) {
+ 259   4                                      //writeshow(0,0,"WL: 850nm");
+ 260   4                                      writeshow(0,1,"RF: 1.477");
+ 261   4                                      refractivity = 1.354;
+ 262   4                              }
+ 263   3                              if (key_count == 1) {
+ 264   4                                      //writeshow(0,0,"WL: 1300nm");
+ 265   4                                      writeshow(0,1,"RF: 1.4719");
+ 266   4                                      refractivity = 1.359;
+ 267   4                              }
+ 268   3                              if (key_count == 2) {
+ 269   4                                      //writeshow(0,0,"WL: 1310nm");
+ 270   4                                      writeshow(0,1,"RF: 1.4680");
+ 271   4                                      refractivity = 1.362;
+ 272   4                              }
+ 273   3                              if (key_count == 3) {
+ 274   4                                      //writeshow(0,0,"WL: 1550nm");
+ 275   4                                      writeshow(0,1,"RF: 1.4685");
+ 276   4                                      refractivity = 1.360;
+ 277   4                              }
+ 278   3                              key_count++;
+ 279   3                      }
+ 280   2      
+ 281   2      
+ 282   2                      if (k3==0){
+ 283   3                              lcdinit();
+ 284   3                              writeshow(0,0,"Reset: Wait.");
+ 285   3                              writeshow(0,1,"-------");
+ 286   3                              //sendcmdme(shutdown);
+ 287   3                              delay(300);
+ 288   3                              //sendcmdme(laserOn);
+ 289   3                              lcdinit();
+ 290   3                              writeshow(0,0,"Reset OK.");
+ 291   3                              delay(300);
+ 292   3                              writeshow(0,0,"Fiber Length:");
+ 293   3                      }
+ 294   2      
+ 295   2      
+ 296   2                      if (k2==0){
+ 297   3                              lcdinit();
+ 298   3                              writeshow(0,0,"Fiber Length:");
+ 299   3                              stringLenth=38;
+ 300   3                              aciiCount=0;//接收38个字符串就够了
+ 301   3                              wirtecursor(0,1);
+ 302   3                              writedata('M');
+ 303   3                              //sendAscii("$00022426&");//开始连续测量
+C51 COMPILER V9.01   MAIN                                                                  11/16/2019 11:20:12 PAGE 6   
 
- 304   3                          {
- 305   4                                      uartSbuf[i] = GetASCII(receivedata[i]);
- 306   4                          }
- 307   3                              
- 308   3                              measure_num = (uartSbuf[4]-'0') * 10 + (uartSbuf[5]-'0') * 1 + (uartSbuf[7]-'0') * 0.1 + (uartSbuf[8]-'
-             -0') * 0.01;                 //
- 309   3      
- 310   3                              if (set_real_num_int != 0) {
- 311   4                                      measure_num_int = (int)(measure_num * 100);
- 312   4                                      refractivity = set_real_num_int / measure_num_int;
- 313   4                              }
- 314   3      
- 315   3                              adjust_num = measure_num * refractivity;
- 316   3                              adjust_num_int = (int)(adjust_num*100);
- 317   3                                                      
- 318   3                              tmpSbuf[0] = ((adjust_num_int/1000) % 10) + '0';
- 319   3                              tmpSbuf[1] = ((adjust_num_int/100) % 10)  + '0';
- 320   3                              tmpSbuf[2] = ((adjust_num_int/10) % 10)  + '0';
- 321   3                              tmpSbuf[3] = (adjust_num_int% 10)  + '0' ;
- 322   3                              
- 323   3                              wirtecursor(2,1);
- 324   3                              writedata(tmpSbuf[0]);
- 325   3                              writedata(tmpSbuf[1]);
- 326   3                              writedata('.');
- 327   3                              //writedata(tmpSbuf[2]);
- 328   3                              writedata(tmpSbuf[2]);
- 329   3                              writedata(tmpSbuf[3]);
- 330   3                              writedata('m');
- 331   3      
- 332   3                      }
- 333   2      
- 334   2              }
- 335   1      
- 336   1      }
- 337          
- 338          void uartRec()interrupt 4{
- 339   1              ES=0;//关闭中断
- 340   1      
- 341   1              if (RI) {
- 342   2                      RI=0;
- 343   2                      receivedata[aciiCount]=SBUF;
- 344   2                      aciiCount++;
- 345   2                      
- 346   2                      if (aciiCount>stringLenth) //根据各个模式截取合适长度的字符串
- 347   2                      {
- 348   3                              aciiCount=0;
- 349   3                      }  
- 350   2              }
- 351   1              if (TI) {
- 352   2                      TI=0;
- 353   2              }
- 354   1              ES=1;
- 355   1      }
- 356          
- 357          void t0() interrupt 1
- 358          {
- 359   1              static char i;
- 360   1              TL0 = 0x58;             //设置定时初值
- 361   1              TH0 = 0x9E;             //设置定时初值
- 362   1              i++;
- 363   1              if (i==20) {
- 364   2                      i=0;
-C51 COMPILER V9.01   MAIN                                                                  11/05/2019 11:36:57 PAGE 7   
+ 304   3                              sendcmdme(singleTest);
+ 305   3      
+ 306   3                              for(i = 0; i<11;i++)
+ 307   3                          {
+ 308   4                                      uartSbuf[i] = GetASCII(receivedata[i]);
+ 309   4                          }
+ 310   3                              
+ 311   3                              measure_num = (uartSbuf[4]-'0') * 10 + (uartSbuf[5]-'0') * 1 + (uartSbuf[7]-'0') * 0.1 + (uartSbuf[8]-'
+             -0') * 0.01;                 //             0.779985
+ 312   3                              // 1.359
+ 313   3                              if (set_real_num != 0) {
+ 314   4                                  measure_num_tmp = measure_num *  refractivity;
+ 315   4                                      //measure_num_int = (int)(measure_num * 100);
+ 316   4                                      tmp_re = set_real_num / measure_num_tmp;                                        // 1.00 / 0.7799
+ 317   4                                      refractivity = refractivity * tmp_re;
+ 318   4                              }
+ 319   3                              set_real_num = 0;
+ 320   3      
+ 321   3                              adjust_num = measure_num * refractivity;
+ 322   3                              adjust_num_int = (int)(adjust_num*100);
+ 323   3                                                      
+ 324   3                              tmpSbuf[0] = ((adjust_num_int/1000) % 10) + '0';
+ 325   3                              tmpSbuf[1] = ((adjust_num_int/100) % 10)  + '0';
+ 326   3                              tmpSbuf[2] = ((adjust_num_int/10) % 10)  + '0';
+ 327   3                              tmpSbuf[3] = (adjust_num_int% 10)  + '0' ;
+ 328   3                              
+ 329   3                              wirtecursor(2,1);
+ 330   3                              writedata(tmpSbuf[0]);
+ 331   3                              writedata(tmpSbuf[1]);
+ 332   3                              writedata('.');
+ 333   3                              //writedata(tmpSbuf[2]);
+ 334   3                              writedata(tmpSbuf[2]);
+ 335   3                              writedata(tmpSbuf[3]);
+ 336   3                              writedata('m');
+ 337   3      
+ 338   3                      }
+ 339   2      
+ 340   2              }
+ 341   1      
+ 342   1      }
+ 343          
+ 344          void uartRec()interrupt 4{
+ 345   1              ES=0;//关闭中断
+ 346   1      
+ 347   1              if (RI) {
+ 348   2                      RI=0;
+ 349   2                      receivedata[aciiCount]=SBUF;
+ 350   2                      aciiCount++;
+ 351   2                      
+ 352   2                      if (aciiCount>stringLenth) //根据各个模式截取合适长度的字符串
+ 353   2                      {
+ 354   3                              aciiCount=0;
+ 355   3                      }  
+ 356   2              }
+ 357   1              if (TI) {
+ 358   2                      TI=0;
+ 359   2              }
+ 360   1              ES=1;
+ 361   1      }
+ 362          
+ 363          void t0() interrupt 1
+ 364          {
+C51 COMPILER V9.01   MAIN                                                                  11/16/2019 11:20:12 PAGE 7   
 
- 365   2                      Sysec++;
- 366   2              }
- 367   1      }        
+ 365   1              static char i;
+ 366   1              TL0 = 0x58;             //设置定时初值
+ 367   1              TH0 = 0x9E;             //设置定时初值
+ 368   1              i++;
+ 369   1              if (i==20) {
+ 370   2                      i=0;
+ 371   2                      Sysec++;
+ 372   2              }
+ 373   1      }        
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   1204    ----
+   CODE SIZE        =   1237    ----
    CONSTANT SIZE    =    124    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
-   DATA SIZE        =     84    ----
+   DATA SIZE        =     92    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =      3    ----
 END OF MODULE INFORMATION.

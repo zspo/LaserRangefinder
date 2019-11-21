@@ -186,10 +186,10 @@
       <FileType>1</FileType>
       <tvExp>1</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>27</ColumnNumber>
+      <ColumnNumber>18</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>109</TopLine>
-      <CurrentLine>109</CurrentLine>
+      <TopLine>300</TopLine>
+      <CurrentLine>300</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\main.c</PathWithFileName>
       <FilenameWithoutPath>main.c</FilenameWithoutPath>
@@ -225,7 +225,7 @@
   </Group>
 
   <AlienFiles>
-    <PathWithFilename>D:\_Zsp_Space\SHU_HERE\SHU_Project\激光测距\一种高精度相位激光测距仪_在第一次交付版本上增加键盘等\KEY_MATRIX.H</PathWithFilename>
+    <PathWithFilename>D:\_Zsp_Space\SHU_HERE\SHU_Project\激光测距\LaserRangefinder\KEY_MATRIX.H</PathWithFilename>
     <TopLine>1</TopLine>
     <CurrentLine>1</CurrentLine>
     <Constant>0</Constant>
@@ -303,7 +303,7 @@
   </AlienFiles>
 
   <AlienFiles>
-    <PathWithFilename>D:\_Zsp_Space\SHU_HERE\SHU_Project\激光测距\一种高精度相位激光测距仪_在第一次交付版本上增加键盘等\1602.H</PathWithFilename>
+    <PathWithFilename>D:\_Zsp_Space\SHU_HERE\SHU_Project\激光测距\LaserRangefinder\1602.H</PathWithFilename>
     <TopLine>1</TopLine>
     <CurrentLine>3</CurrentLine>
     <Constant>0</Constant>
@@ -1673,9 +1673,9 @@
       <Documents>
         <Doc>
           <Name>.\main.c</Name>
-          <ColumnNumber>27</ColumnNumber>
-          <TopLine>109</TopLine>
-          <CurrentLine>109</CurrentLine>
+          <ColumnNumber>18</ColumnNumber>
+          <TopLine>300</TopLine>
+          <CurrentLine>300</CurrentLine>
         </Doc>
         <Doc>
           <Name>.\1602.c</Name>
